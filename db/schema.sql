@@ -3,7 +3,7 @@ USE shoryan;
 
 -- TABLE: users
 -- Every user can both donate and request blood
---------------------------------------------------------
+-- ========================================================
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
@@ -22,10 +22,10 @@ CREATE TABLE users (
     INDEX idx_blood_city (blood_type, city, is_available)   -- speeds up donor search/matching
 );
 
---------------------------------------------------------
+-- ========================================================
 
 -- TABLE: blood_requests
---------------------------------------------------------
+-- ========================================================
 CREATE TABLE blood_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     requester_id INT NOT NULL,
@@ -43,10 +43,10 @@ CREATE TABLE blood_requests (
     INDEX idx_search (blood_type, city, status)   -- speeds up browse/search requests
 );
 
---------------------------------------------------------
+-- ========================================================
 
 -- TABLE: donations (Matches)
---------------------------------------------------------
+-- ========================================================
 CREATE TABLE donations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     request_id INT NOT NULL,
@@ -73,10 +73,10 @@ INSERT INTO users (full_name, email, password, phone, blood_type, city, gender, 
 ('Mona Youssef', 'mona@test.com', '$2y$10$iEK1i.QGeWElj5L9LtgO6.l4cJvkYO8SlxePA05XJWp23Z1bQBFMK', '01033333333', 'AB+', 'Cairo', 'female', 'user'),
 ('Karim Adel', 'karim@test.com', '$2y$10$iEK1i.QGeWElj5L9LtgO6.l4cJvkYO8SlxePA05XJWp23Z1bQBFMK', '01044444444', 'B+', 'Alexandria', 'male', 'user');
 
-INSERT INTO blood_requests (requester_id, patient_name, blood_type, units_needed, hospital_name, city, urgency, description, status) VALUES
-(3, 'Layla Ahmed', 'A+', 2, 'Cairo University Hospital', 'Cairo', 'urgent', 'Surgery scheduled tomorrow morning', 'open'),
-(4, 'Omar Khaled', 'AB+', 1, 'Nile Badrawi Hospital', 'Cairo', 'critical', 'ICU patient, needs blood today', 'open'),
-(5, 'Nour Mostafa', 'B+', 3, 'Alexandria Medical Center', 'Alexandria', 'normal', 'Scheduled procedure next week', 'open');
+INSERT INTO blood_requests (requester_id, patient_name, blood_type, units_needed, hospital_name, city, urgency, status) 
+VALUES (3, 'Layla Ahmed', 'A+', 2, 'Cairo University Hospital', 'Cairo', 'urgent', 'open'),
+(4, 'Omar Khaled', 'AB+', 1, 'Nile Badrawi Hospital', 'Cairo', 'critical', 'open'),
+(5, 'Nour Mostafa', 'B+', 3, 'Alexandria Medical Center', 'Alexandria', 'normal', 'open');
 
 INSERT INTO donations (request_id, donor_id, status) VALUES
 (1, 2, 'pending');
