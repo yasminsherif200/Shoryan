@@ -3,7 +3,9 @@
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 64px);
-    padding: 40px 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 40px;
     box-sizing: border-box;
 }
 
@@ -13,6 +15,7 @@
     border-radius: 12px;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     padding: 40px;
+    margin-top: 40px;
     width: 100%;
     max-width: 480px;
 }

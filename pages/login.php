@@ -36,7 +36,7 @@ $currentPage = 'login';
 
             <div id="formMessage" class="form-message"></div>
 
-            <form id="loginForm">
+            <form id="loginForm" method="POST">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <div class="input-icon-wrap">

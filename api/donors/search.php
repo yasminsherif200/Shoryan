@@ -23,9 +23,7 @@ $city       = sanitize($_GET['city'] ?? '');
 if ($blood_type !== '' && !isValidBloodType($blood_type)) {
     jsonResponse(false, null, "Invalid blood type");
 }
-if ($city !== '' && !isValidCity($city)) {
-    jsonResponse(false, null, "Invalid city");
-}
+
 
 $sql = "SELECT id, full_name, blood_type, city, phone, last_donation_date
         FROM users
