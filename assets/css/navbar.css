@@ -1,0 +1,144 @@
+:root {
+    --primary: #af101a;
+    --primary-light: #ffdad6;
+    --on-primary: #ffffff;
+    --background: #fbf9f8;
+    --surface: #ffffff;
+    --surface-variant: #f0eded;
+    --on-surface: #1b1c1c;
+    --on-surface-variant: #5b403d;
+    --outline-variant: #e4beba;
+    --error: #ba1a1a;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: var(--background);
+    color: var(--on-surface);
+}
+
+/* ===== Public top navbar ===== */
+.navbar-public {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 64px;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+    z-index: 50;
+}
+
+.navbar-container {
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.navbar-links {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-link {
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+}
+
+.nav-link.active,
+.nav-link:hover {
+    color: var(--primary);
+}
+
+/* ===== Sidebar (user + admin) ===== */
+.sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100%;
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--outline-variant);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    box-sizing: border-box;
+}
+
+.sidebar-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 0 8px;
+    margin-bottom: 32px;
+}
+
+.sidebar-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+}
+
+.sidebar-link.active {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.sidebar-admin .sidebar-link.active {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.sidebar-link:hover:not(.active) {
+    background: var(--surface-variant);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--outline-variant);
+    padding-top: 16px;
+}
+
+.sidebar-username {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0 16px;
+    margin-bottom: 8px;
+}
+
+.logout-link {
+    color: var(--error);
+}
+
+/* Push page content over so it's not hidden under the fixed sidebar/navbar */
+.page-with-sidebar {
+    margin-left: 240px;
+    padding: 32px;
+}
+
+.page-with-topbar {
+    padding-top: 64px;
+}
