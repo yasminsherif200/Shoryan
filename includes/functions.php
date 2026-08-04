@@ -13,7 +13,7 @@ function sanitize($input){
 }
 
 function isValidEmail($email){
-    return filter_var($email, FILTER_VALIDATE-EMAIL) !== false;
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 function isValidBloodType($bloodType){

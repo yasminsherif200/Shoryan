@@ -13,7 +13,7 @@ $password = $_POST['password'] ?? '';
 $confirmPassword = $_POST['confirm_password'] ?? '';
 $phone = $_POST['phone'] ?? '';
 $blood_type = sanitize($_POST['blood_type'] ?? '');
-$city = sanitize($_POSt['city'] ?? '');
+$city = sanitize($_POST['city'] ?? '');
 $gender = sanitize($_POST['gender'] ?? '');
 
 if(!isRequired($full_name)) jsonResponse(false, null, "Full name is Required");
