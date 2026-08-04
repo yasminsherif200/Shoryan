@@ -12,12 +12,13 @@ $pageTitle = 'My Donations';
     <title><?= htmlspecialchars($pageTitle) ?> - Shoryan</title>
     <link rel="stylesheet" href="/Shoryan/assets/css/navbar.css">
     <link rel="stylesheet" href="/Shoryan/assets/css/footer.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/dashboard.css">
 </head>
 <body>
 
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<main class="page-content">
+<main class="page-with-sidebar">
     <h1>My Donations</h1>
     <p>Here are all the blood requests you volunteered for.</p>
 
