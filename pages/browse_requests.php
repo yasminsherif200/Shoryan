@@ -1,85 +1,68 @@
-<?php require_once __DIR__ . '/../includes/auth_check.php'; require_login(); ?>
+<?php
+require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/constants.php';
+
+require_login();
+
+$currentPage = 'browse-requests';
+$pageTitle = 'Browse Requests';
+?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تصفح طلبات الدم - شريان</title>
-<link rel="stylesheet" href="/assets/css/style.css">
+    <meta charset="UTF-8">
+    <title><?= htmlspecialchars($pageTitle) ?> - Shoryan</title>
+    <link rel="stylesheet" href="/Shoryan/assets/css/navbar.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/footer.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/forms.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/browse_requests.css">
 </head>
 <body>
+
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<main class="container">
-  <h1>طلبات الدم المتاحة</h1>
+<main class="page-with-sidebar">
 
-  <form id="filter-form" class="filters">
-    <select name="blood_type">
-      <option value="">كل الفصائل</option>
-      <option>A+</option><option>A-</option>
-      <option>B+</option><option>B-</option>
-      <option>AB+</option><option>AB-</option>
-      <option>O+</option><option>O-</option>
-    </select>
+    <div class="page-header">
+        <h1>Browse Requests</h1>
+        <p class="page-subtitle">Find patients in need of your blood type. Your donation could save a life today.</p>
+    </div>
 
-    <input type="text" name="city" placeholder="المدينة">
+    <div class="browse-filter-card">
+        <form id="browseFilterForm" class="browse-filter-form">
+            <div class="form-group">
+                <label for="search">Search Patients or Hospitals</label>
+                <div class="input-icon-wrap">
+                    <svg class="input-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    <input type="text" id="search" name="search" placeholder="e.g. Al Kasr Al Ainy">
+                </div>
+            </div>
 
-    <select name="status">
-      <option value="">كل الحالات</option>
-      <option value="open">مفتوح</option>
-      <option value="fulfilled">مكتمل</option>
-    </select>
+            <div class="form-group">
+                <label for="blood_type">Blood Type</label>
+                <select id="blood_type" name="blood_type">
+                    <option value="">All Types</option>
+                    <?php foreach (BLOOD_TYPES as $bt): ?>
+                        <option value="<?= $bt ?>"><?= $bt ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-    <button type="submit">تصفية</button>
-  </form>
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" placeholder="All Cities">
+            </div>
+        </form>
+    </div>
 
-  <div id="requests-list" class="requests-grid">
-    <p>جارٍ التحميل...</p>
-  </div>
+    <div id="browseMessage" class="form-message"></div>
+
+    <div id="browseGrid" class="browse-grid"></div>
+
 </main>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
-<script src="/assets/js/requests.js"></script>
-<script>
-async function renderRequests(filters = {}) {
-  const container = document.getElementById('requests-list');
-  container.innerHTML = '<p>جارٍ التحميل...</p>';
 
-  const result = await RequestsAPI.list(filters);
-
-  if (!result.success) {
-    container.innerHTML = `<p>${result.message}</p>`;
-    return;
-  }
-
-  if (result.data.length === 0) {
-    container.innerHTML = '<p>لا توجد طلبات مطابقة.</p>';
-    return;
-  }
-
-  container.innerHTML = '';
-  result.data.forEach((r) => {
-    const card = document.createElement('a');
-    card.href = `/pages/request_details.php?id=${r.id}`;
-    card.className = `request-card urgency-${r.urgency}`;
-    card.innerHTML = `
-      <h3>${r.patient_name}</h3>
-      <p>فصيلة الدم: <strong>${r.blood_type}</strong></p>
-      <p>المدينة: ${r.city}</p>
-      <p>الوحدات المطلوبة: ${r.units_needed}</p>
-      <span class="badge">${r.urgency}</span>
-    `;
-    container.appendChild(card);
-  });
-}
-
-document.getElementById('filter-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target).entries());
-  renderRequests(data);
-});
-
-renderRequests();
-</script>
+<script src="/Shoryan/assets/js/requests.js"></script>
 </body>
 </html>

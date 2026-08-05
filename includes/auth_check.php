@@ -6,7 +6,7 @@ if(session_status() ===  PHP_SESSION_NONE){
 
 function require_login(){
     if(!isset($_SESSION['user_id'])){
-        header('Location: /shoryan/pages/login.php');
+        header('Location: /Shoryan/pages/login.php');
         exit;
     }
 }
@@ -14,6 +14,7 @@ function require_login(){
 function require_admin(){
     require_login();
     if($_SESSION['role'] !== 'admin'){
-        header('Location: /shoryan/pages/index.php');
+        header('Location: /Shoryan/pages/index.php');
     }
+    exit;
 }

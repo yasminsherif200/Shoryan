@@ -3,29 +3,32 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/auth_check.php';
 
-$user_id = require_login();
+require_login();
+$user_id = $_SESSION['user_id'];
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
     $input = $_POST;
 }
 
-$missing = validate_required(['patient_name', 'blood_type', 'city', 'units_needed', 'urgency'], $input);
-if ($missing) {
-    json_response(false, "Missing required field: $missing", null, 400);
+$requiredFields = ['patient_name', 'blood_type', 'city', 'units_needed', 'urgency'];
+foreach ($requiredFields as $field) {
+    if (!isRequired($input[$field] ?? '')) {
+        jsonResponse(false, null, "Missing required field: $field");
+    }
 }
 
-if (!valid_blood_type($input['blood_type'])) {
-    json_response(false, 'Invalid blood type.', null, 400);
+if (!isValidBloodType($input['blood_type'])) {
+    jsonResponse(false, null, 'Invalid blood type.');
 }
 
-if (!valid_urgency($input['urgency'])) {
-    json_response(false, 'Invalid urgency level.', null, 400);
+if (!isValidUrgency($input['urgency'])) {
+    jsonResponse(false, null, 'Invalid urgency level.');
 }
 
 $units = (int) $input['units_needed'];
 if ($units < 1) {
-    json_response(false, 'Units needed must be at least 1.', null, 400);
+    jsonResponse(false, null, 'Units needed must be at least 1.');
 }
 
 $patient_name  = sanitize($input['patient_name']);
@@ -41,19 +44,19 @@ $sql = "INSERT INTO blood_requests
             (:requester_id, :patient_name, :blood_type, :city, :hospital_name, :units_needed, :urgency, 'open', :notes, NOW())";
 
 try {
-    $stmt = $conn->prepare($sql);
+    $stmt = $dsn->prepare($sql);
     $stmt->execute([
-        ':requester_id'  => $user_id,
-        ':patient_name'  => $patient_name,
-        ':blood_type'    => $blood_type,
-        ':city'          => $city,
-        ':hospital_name' => $hospital_name,
-        ':units_needed'  => $units,
-        ':urgency'       => $urgency,
-        ':notes'         => $notes,
+        'requester_id'  => $user_id,
+        'patient_name'  => $patient_name,
+        'blood_type'    => $blood_type,
+        'city'          => $city,
+        'hospital_name' => $hospital_name,
+        'units_needed'  => $units,
+        'urgency'       => $urgency,
+        'notes'         => $notes,
     ]);
 
-    json_response(true, 'Blood request created successfully.', ['request_id' => (int) $conn->lastInsertId()]);
+    jsonResponse(true, ['request_id' => (int) $dsn->lastInsertId()], 'Blood request created successfully.');
 } catch (PDOException $e) {
-    json_response(false, 'Failed to create request: ' . $e->getMessage(), null, 500);
+    jsonResponse(false, null, 'Failed to create request: ' . $e->getMessage());
 }

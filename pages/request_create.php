@@ -1,88 +1,116 @@
-<?php require_once __DIR__ . '/../includes/auth_check.php'; require_login(); ?>
+<?php
+require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/constants.php';
+
+require_login();
+
+$currentPage = 'my-requests';
+$pageTitle = 'Create Blood Request';
+?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إنشاء طلب دم - شريان</title>
-<link rel="stylesheet" href="/assets/css/style.css">
+    <meta charset="UTF-8">
+    <title><?= htmlspecialchars($pageTitle) ?> - Shoryan</title>
+    <link rel="stylesheet" href="/Shoryan/assets/css/navbar.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/footer.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/forms.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/request_create.css">
 </head>
 <body>
+
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<main class="container">
-  <h1>إنشاء طلب دم جديد</h1>
+<main class="page-with-sidebar auth-page">
+    <div class="auth-card request-create-card">
 
-  <form id="request-form">
-    <label>اسم المريض
-      <input type="text" name="patient_name" required>
-    </label>
+        <div class="auth-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                <path d="M12 2C12 2 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-7-13-7-13z"/>
+            </svg>
+        </div>
 
-    <label>فصيلة الدم
-      <select name="blood_type" required>
-        <option value="">اختر الفصيلة</option>
-        <option>A+</option><option>A-</option>
-        <option>B+</option><option>B-</option>
-        <option>AB+</option><option>AB-</option>
-        <option>O+</option><option>O-</option>
-      </select>
-    </label>
+        <h1 class="auth-title">Create Blood Request</h1>
+        <p class="auth-subtitle">Fill out the details below to broadcast an urgent request to nearby donors.</p>
 
-    <label>المدينة
-      <input type="text" name="city" required>
-    </label>
+        <div id="formMessage" class="form-message"></div>
 
-    <label>المستشفى (اختياري)
-      <input type="text" name="hospital_name">
-    </label>
+        <form id="requestForm">
 
-    <label>عدد الوحدات المطلوبة
-      <input type="number" name="units_needed" min="1" required>
-    </label>
+            <div class="form-group">
+                <label for="patient_name">Patient Name</label>
+                <input type="text" id="patient_name" name="patient_name" placeholder="Enter patient's full name" required>
+            </div>
 
-    <label>درجة الأولوية
-      <select name="urgency" required>
-        <option value="normal">عادية</option>
-        <option value="urgent">عاجلة</option>
-        <option value="critical">حرجة</option>
-      </select>
-    </label>
+            <div class="medical-details-box">
+                <p class="medical-details-title">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                    Medical Details
+                </p>
 
-    <label>ملاحظات (اختياري)
-      <textarea name="notes"></textarea>
-    </label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Blood Type Needed</label>
+                        <div class="blood-type-grid">
+                            <?php foreach (BLOOD_TYPES as $bt): ?>
+                                <label class="blood-type-tile">
+                                    <input type="radio" name="blood_type" value="<?= $bt ?>" required>
+                                    <span><?= $bt ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
 
-    <button type="submit">إرسال الطلب</button>
-  </form>
+                    <div class="form-group">
+                        <label for="units_needed">Quantity (Bags)</label>
+                        <select id="units_needed" name="units_needed" required>
+                            <?php for ($i = 1; $i <= 10; $i++): ?>
+                                <option value="<?= $i ?>"><?= $i ?> Bag<?= $i > 1 ? 's' : '' ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-  <p id="form-message"></p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" placeholder="e.g. Cairo" required>
+                </div>
+                <div class="form-group">
+                    <label for="urgency">Urgency</label>
+                    <select id="urgency" name="urgency" required>
+                        <?php foreach (URGENCY_LEVELS as $u): ?>
+                            <option value="<?= $u ?>"><?= ucfirst($u) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="hospital_name">Hospital Name</label>
+                <input type="text" id="hospital_name" name="hospital_name" placeholder="E.g., Al Kasr Al Ainy">
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Additional Details</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="Any specific instructions, floor number, or urgency level details..."></textarea>
+            </div>
+
+            <div class="form-footer-row">
+                <p class="form-disclaimer">By submitting, you confirm that this request is genuine and needed immediately.</p>
+                <button type="submit" class="btn-primary btn-broadcast">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>
+                    Broadcast Request
+                </button>
+            </div>
+        </form>
+
+    </div>
 </main>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
-<script src="/assets/js/requests.js"></script>
-<script>
-document.getElementById('request-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  const msg = document.getElementById('form-message');
 
-  submitBtn.disabled = true;
-  msg.textContent = '';
-
-  const data = Object.fromEntries(new FormData(e.target).entries());
-  const result = await RequestsAPI.create(data);
-
-  msg.textContent = result.message;
-  msg.className = result.success ? 'success' : 'error';
-
-  if (result.success) {
-    setTimeout(() => {
-      window.location.href = `/pages/request_details.php?id=${result.data.request_id}`;
-    }, 800);
-  } else {
-    submitBtn.disabled = false;
-  }
-});
-</script>
+<script src="/Shoryan/assets/js/requests.js"></script>
 </body>
 </html>

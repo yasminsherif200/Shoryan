@@ -28,10 +28,6 @@ $pageTitle = 'Dashboard';
         real supply-vs-demand modeling), so it's left out rather than hardcoded.
     -->
     <div class="dashboard-topbar">
-        <button type="button" class="notif-bell" id="notifBell" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-            <span id="notifBadge" class="notif-badge" style="display:none;"></span>
-        </button>
  
         <div class="topbar-user">
             <div class="topbar-user-info">
@@ -55,6 +51,17 @@ $pageTitle = 'Dashboard';
             <p class="stat-delta" id="statDonationsDelta"></p>
         </div>
  
+        <div class="stat-card">
+            <div class="stat-card-top">
+                <span class="stat-label">Active Requests</span>
+                <span class="stat-icon stat-icon-blue">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-16M4 12h16"/></svg>
+                </span>
+            </div>
+            <p class="stat-value" id="statActiveRequests">—</p>
+            <p class="stat-caption">Currently open</p>
+        </div>
+
         <div class="stat-card">
             <div class="stat-card-top">
                 <span class="stat-label">Pending Offers</span>
@@ -81,6 +88,37 @@ $pageTitle = 'Dashboard';
  
     <div class="activity-card">
         <div class="activity-card-header">
+            <h2>My Requests</h2>
+            <div class="activity-card-header-actions">
+                <a href="request_create.php" class="btn-new-request">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    New Request
+                </a>
+                <a href="my_requests.php" class="view-all-link">
+                    View All
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <div id="requestsMessage" class="form-message"></div>
+
+        <table id="myRequestsTable" class="data-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Blood Type</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="myRequestsTableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="activity-card">
+        <div class="activity-card-header">
             <h2>Recent Activity</h2>
             <a href="my_donations.php" class="view-all-link">
                 View All
@@ -98,6 +136,7 @@ $pageTitle = 'Dashboard';
                     <th>Blood Type</th>
                     <th>Hospital</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="activityTableBody"></tbody>
@@ -111,4 +150,3 @@ $pageTitle = 'Dashboard';
 <script src="/Shoryan/assets/js/dashboard.js"></script>
 </body>
 </html>
- 
