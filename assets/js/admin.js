@@ -161,3 +161,154 @@ function renderBreakdown(containerId, data) {
         container.appendChild(row);
     });
 }
+// Admin dashboard helpers (fetch wrappers + table rendering)
+const AdminAPI = {
+
+  async listRequests(filters = {}) {
+    const params = new URLSearchParams(filters).toString();
+    const res = await fetch(`/api/list.php${params ? '?' + params : ''}`);
+    return res.json();
+  },
+
+  async verifyRequest(requestId) {
+    const res = await fetch('/api/update.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request_id: requestId, verified_by_hospital: true })
+    });
+    return res.json();
+  },
+
+  async updateRequestStatus(requestId, status) {
+    const res = await fetch('/api/update.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request_id: requestId, status })
+    });
+    return res.json();
+  },
+
+  async deleteRequest(requestId) {
+    const res = await fetch('/api/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request_id: requestId })
+    });
+    return res.json();
+  },
+
+  async listDonations(filters = {}) {
+    const params = new URLSearchParams(filters).toString();
+    const res = await fetch(`/api/donations_list.php${params ? '?' + params : ''}`);
+    return res.json();
+  },
+
+  async updateDonationStatus(donationId, status) {
+    const res = await fetch('/api/donations_update.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ donation_id: donationId, status })
+    });
+    return res.json();
+  },
+
+  async renderRequestsTable(filters = {}) {
+    const tbody = document.getElementById('requests-table-body');
+    tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+
+    const result = await this.listRequests(filters);
+    if (!result.success) {
+      tbody.innerHTML = `<tr><td colspan="6">${result.message}</td></tr>`;
+      return;
+    }
+    if (result.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">No requests found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = result.data.map((r) => `
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.patient_name}</td>
+        <td>${r.blood_type}</td>
+        <td>${r.hospital_name}</td>
+        <td>
+          <select data-id="${r.id}" class="status-select">
+            <option value="open" ${r.status === 'open' ? 'selected' : ''}>Open</option>
+            <option value="fulfilled" ${r.status === 'fulfilled' ? 'selected' : ''}>Fulfilled</option>
+            <option value="cancelled" ${r.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+          ${Number(r.verified_by_hospital) ? '<span class="badge-verified">Verified</span>' : `<button data-id="${r.id}" class="verify-btn">Verify</button>`}
+        </td>
+        <td>
+          <button data-id="${r.id}" class="delete-btn">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('.status-select').forEach((sel) => {
+      sel.addEventListener('change', async (e) => {
+        const result = await this.updateRequestStatus(e.target.dataset.id, e.target.value);
+        if (!result.success) alert(result.message);
+      });
+    });
+    tbody.querySelectorAll('.verify-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const result = await this.verifyRequest(e.target.dataset.id);
+        if (result.success) this.renderRequestsTable(filters);
+        else alert(result.message);
+      });
+    });
+    tbody.querySelectorAll('.delete-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        if (!confirm('Are you sure you want to permanently delete this request?')) return;
+        const result = await this.deleteRequest(e.target.dataset.id);
+        if (result.success) this.renderRequestsTable(filters);
+        else alert(result.message);
+      });
+    });
+  },
+
+  async renderDonationsTable(filters = {}) {
+    const tbody = document.getElementById('donations-table-body');
+    tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
+
+    const result = await this.listDonations(filters);
+    if (!result.success) {
+      tbody.innerHTML = `<tr><td colspan="7">${result.message}</td></tr>`;
+      return;
+    }
+    if (result.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No donation offers found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = result.data.map((d) => `
+      <tr>
+        <td>${d.donor_name}</td>
+        <td>${d.donor_phone}</td>
+        <td>${d.request_code}</td>
+        <td>${d.patient_name}</td>
+        <td>${d.blood_type}</td>
+        <td>
+          <select data-id="${d.id}" class="donation-status-select">
+            <option value="pending" ${d.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="accepted" ${d.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+            <option value="completed" ${d.status === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="cancelled" ${d.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </td>
+        <td><button data-id="${d.id}" class="save-donation-btn">Save</button></td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('.save-donation-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        const status = tbody.querySelector(`.donation-status-select[data-id="${id}"]`).value;
+        const result = await this.updateDonationStatus(id, status);
+        alert(result.message);
+      });
+    });
+  },
+};
