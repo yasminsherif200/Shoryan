@@ -28,9 +28,9 @@ function loadDonationStats() {
                 return;
             }
 
-            const donations = data.data || [];
+            const donations = data.data.donations || [];
             renderDonationStatCards(donations);
-            renderActivityTable(donations.slice(0, 5)); // API already sorts newest-first
+            renderActivityTable(donations.slice(0, 5));
         })
         .catch(function (err) {
             console.error(err);

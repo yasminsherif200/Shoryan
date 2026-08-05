@@ -7,6 +7,7 @@ define('REQUEST_STATUSES', ['open', 'fulfilled', 'cancelled']);
 define('DONATION_STATUSES', ['pending', 'accepted', 'rejected', 'completed']);
 define('USER_ROLES', ['user', 'admin']);
 define('BLOOD_COMPATIBILITY', [
+    // Recipient =>  Donors
     'O-'  => ['O-'],
     'O+'  => ['O-', 'O+'],
     'A-'  => ['O-', 'A-'],
