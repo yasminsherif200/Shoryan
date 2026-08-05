@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/auth_check.php';
 require_admin();
 
-$currentPage = 'manage-users';
+$currentPage = 'users';
 $pageTitle = 'Manage Users';
 ?>
 <!DOCTYPE html>
@@ -13,6 +13,7 @@ $pageTitle = 'Manage Users';
     <link rel="stylesheet" href="/Shoryan/assets/css/navbar.css">
     <link rel="stylesheet" href="/Shoryan/assets/css/footer.css">
     <link rel="stylesheet" href="/Shoryan/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/manage_users.css">
 </head>
 <body>
 

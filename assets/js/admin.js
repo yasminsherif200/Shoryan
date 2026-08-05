@@ -162,153 +162,200 @@ function renderBreakdown(containerId, data) {
     });
 }
 // Admin dashboard helpers (fetch wrappers + table rendering)
-const AdminAPI = {
 
-  async listRequests(filters = {}) {
-    const params = new URLSearchParams(filters).toString();
-    const res = await fetch(`/api/list.php${params ? '?' + params : ''}`);
-    return res.json();
-  },
+// ========================================================
+// ===== Person 4: Manage Requests (admin) =====
+// Powers pages/admin/manage_requests.php from api/admin/requests.php.
+// List + delete only — matches what the backend actually supports.
+// ========================================================
+let allAdminRequestsCache = [];
 
-  async verifyRequest(requestId) {
-    const res = await fetch('/api/update.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ request_id: requestId, verified_by_hospital: true })
-    });
-    return res.json();
-  },
+document.addEventListener('DOMContentLoaded', function () {
+    const tbody = document.getElementById('requests-table-body');
+    if (tbody) {
+        loadAllRequests();
 
-  async updateRequestStatus(requestId, status) {
-    const res = await fetch('/api/update.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ request_id: requestId, status })
-    });
-    return res.json();
-  },
+        const filterForm = document.getElementById('admin-filter-form');
+        filterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const status = filterForm.status.value;
+            renderAdminRequestsTable(filterRequestsByStatus(allAdminRequestsCache, status));
+        });
+    }
+});
 
-  async deleteRequest(requestId) {
-    const res = await fetch('/api/delete.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ request_id: requestId })
-    });
-    return res.json();
-  },
+function filterRequestsByStatus(requests, status) {
+    if (!status) return requests;
+    return requests.filter(function (r) { return r.status === status; });
+}
 
-  async listDonations(filters = {}) {
-    const params = new URLSearchParams(filters).toString();
-    const res = await fetch(`/api/donations_list.php${params ? '?' + params : ''}`);
-    return res.json();
-  },
-
-  async updateDonationStatus(donationId, status) {
-    const res = await fetch('/api/donations_update.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ donation_id: donationId, status })
-    });
-    return res.json();
-  },
-
-  async renderRequestsTable(filters = {}) {
+function loadAllRequests() {
+    const messageBox = document.getElementById('requestsMessage');
     const tbody = document.getElementById('requests-table-body');
     tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
-    const result = await this.listRequests(filters);
-    if (!result.success) {
-      tbody.innerHTML = `<tr><td colspan="6">${result.message}</td></tr>`;
-      return;
+    fetch('/Shoryan/api/admin/requests.php')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (!data.success) {
+                tbody.innerHTML = '';
+                messageBox.textContent = data.message;
+                messageBox.classList.add('message-error');
+                return;
+            }
+            allAdminRequestsCache = data.data;
+            renderAdminRequestsTable(allAdminRequestsCache);
+        })
+        .catch(function (err) {
+            console.error(err);
+            tbody.innerHTML = '';
+            messageBox.textContent = 'Failed to load requests.';
+            messageBox.classList.add('message-error');
+        });
+}
+
+function renderAdminRequestsTable(requests) {
+    const tbody = document.getElementById('requests-table-body');
+
+    if (requests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No requests found.</td></tr>';
+        return;
     }
-    if (result.data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6">No requests found.</td></tr>';
-      return;
+
+    tbody.innerHTML = '';
+    requests.forEach(function (r) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>#' + r.id + '</td>' +
+            '<td>' + r.patient_name + '</td>' +
+            '<td>' + r.blood_type + '</td>' +
+            '<td>' + (r.hospital_name || '-') + '</td>' +
+            '<td><span class="status-badge status-' + r.status + '">' + r.status + '</span></td>' +
+            '<td><button onclick="deleteRequestAdmin(' + r.id + ')">Delete</button></td>';
+        tbody.appendChild(tr);
+    });
+}
+
+function deleteRequestAdmin(requestId) {
+    const confirmed = confirm('Are you sure you want to permanently delete this request?');
+    if (!confirmed) return;
+
+    const formData = new URLSearchParams();
+    formData.append('request_id', requestId);
+
+    fetch('/Shoryan/api/admin/requests.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            alert(data.message);
+            if (data.success) {
+                loadAllRequests();
+            }
+        })
+        .catch(function (err) {
+            console.error(err);
+            alert('Something went wrong. Please try again.');
+        });
+}
+
+// ========================================================
+// ===== Person 4: Manage Donations (admin) =====
+// Powers pages/admin/manage_donations.php from api/admin/donations.php.
+// List + delete only — status is shown read-only, no update endpoint exists.
+// ========================================================
+let allAdminDonationsCache = [];
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tbody = document.getElementById('donations-table-body');
+    if (tbody) {
+        loadAllDonations();
+
+        const filterForm = document.getElementById('donations-filter-form');
+        filterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const status = filterForm.status.value;
+            renderAdminDonationsTable(filterDonationsByStatus(allAdminDonationsCache, status));
+        });
     }
+});
 
-    tbody.innerHTML = result.data.map((r) => `
-      <tr>
-        <td>${r.id}</td>
-        <td>${r.patient_name}</td>
-        <td>${r.blood_type}</td>
-        <td>${r.hospital_name}</td>
-        <td>
-          <select data-id="${r.id}" class="status-select">
-            <option value="open" ${r.status === 'open' ? 'selected' : ''}>Open</option>
-            <option value="fulfilled" ${r.status === 'fulfilled' ? 'selected' : ''}>Fulfilled</option>
-            <option value="cancelled" ${r.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
-          ${Number(r.verified_by_hospital) ? '<span class="badge-verified">Verified</span>' : `<button data-id="${r.id}" class="verify-btn">Verify</button>`}
-        </td>
-        <td>
-          <button data-id="${r.id}" class="delete-btn">Delete</button>
-        </td>
-      </tr>
-    `).join('');
+function filterDonationsByStatus(donations, status) {
+    if (!status) return donations;
+    return donations.filter(function (d) { return d.status === status; });
+}
 
-    tbody.querySelectorAll('.status-select').forEach((sel) => {
-      sel.addEventListener('change', async (e) => {
-        const result = await this.updateRequestStatus(e.target.dataset.id, e.target.value);
-        if (!result.success) alert(result.message);
-      });
-    });
-    tbody.querySelectorAll('.verify-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        const result = await this.verifyRequest(e.target.dataset.id);
-        if (result.success) this.renderRequestsTable(filters);
-        else alert(result.message);
-      });
-    });
-    tbody.querySelectorAll('.delete-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        if (!confirm('Are you sure you want to permanently delete this request?')) return;
-        const result = await this.deleteRequest(e.target.dataset.id);
-        if (result.success) this.renderRequestsTable(filters);
-        else alert(result.message);
-      });
-    });
-  },
-
-  async renderDonationsTable(filters = {}) {
+function loadAllDonations() {
+    const messageBox = document.getElementById('donationsMessage');
     const tbody = document.getElementById('donations-table-body');
     tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
 
-    const result = await this.listDonations(filters);
-    if (!result.success) {
-      tbody.innerHTML = `<tr><td colspan="7">${result.message}</td></tr>`;
-      return;
-    }
-    if (result.data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7">No donation offers found.</td></tr>';
-      return;
+    fetch('/Shoryan/api/admin/donations.php')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (!data.success) {
+                tbody.innerHTML = '';
+                messageBox.textContent = data.message;
+                messageBox.classList.add('message-error');
+                return;
+            }
+            allAdminDonationsCache = data.data;
+            renderAdminDonationsTable(allAdminDonationsCache);
+        })
+        .catch(function (err) {
+            console.error(err);
+            tbody.innerHTML = '';
+            messageBox.textContent = 'Failed to load donations.';
+            messageBox.classList.add('message-error');
+        });
+}
+
+function renderAdminDonationsTable(donations) {
+    const tbody = document.getElementById('donations-table-body');
+
+    if (donations.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">No donation offers found.</td></tr>';
+        return;
     }
 
-    tbody.innerHTML = result.data.map((d) => `
-      <tr>
-        <td>${d.donor_name}</td>
-        <td>${d.donor_phone}</td>
-        <td>${d.request_code}</td>
-        <td>${d.patient_name}</td>
-        <td>${d.blood_type}</td>
-        <td>
-          <select data-id="${d.id}" class="donation-status-select">
-            <option value="pending" ${d.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="accepted" ${d.status === 'accepted' ? 'selected' : ''}>Accepted</option>
-            <option value="completed" ${d.status === 'completed' ? 'selected' : ''}>Completed</option>
-            <option value="cancelled" ${d.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
-        </td>
-        <td><button data-id="${d.id}" class="save-donation-btn">Save</button></td>
-      </tr>
-    `).join('');
-
-    tbody.querySelectorAll('.save-donation-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        const status = tbody.querySelector(`.donation-status-select[data-id="${id}"]`).value;
-        const result = await this.updateDonationStatus(id, status);
-        alert(result.message);
-      });
+    tbody.innerHTML = '';
+    donations.forEach(function (d) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + d.donor_name + '</td>' +
+            '<td>' + d.donor_phone + '</td>' +
+            '<td>#' + d.request_id + '</td>' +
+            '<td>' + d.patient_name + '</td>' +
+            '<td>' + d.request_blood_type + '</td>' +
+            '<td><span class="status-badge status-' + d.status + '">' + d.status + '</span></td>' +
+            '<td><button onclick="deleteDonationAdmin(' + d.id + ')">Delete</button></td>';
+        tbody.appendChild(tr);
     });
-  },
-};
+}
+
+function deleteDonationAdmin(donationId) {
+    const confirmed = confirm('Are you sure you want to permanently delete this donation record?');
+    if (!confirmed) return;
+
+    const formData = new URLSearchParams();
+    formData.append('donation_id', donationId);
+
+    fetch('/Shoryan/api/admin/donations.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            alert(data.message);
+            if (data.success) {
+                loadAllDonations();
+            }
+        })
+        .catch(function (err) {
+            console.error(err);
+            alert('Something went wrong. Please try again.');
+        });
+}

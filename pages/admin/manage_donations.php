@@ -38,8 +38,8 @@ $pageTitle = 'Manage Donations';
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="accepted">Accepted</option>
+                    <option value="rejected">Rejected</option>
                     <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
                 </select>
                 <button type="submit" class="btn-new-request">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -73,14 +73,5 @@ $pageTitle = 'Manage Donations';
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
 
 <script src="/Shoryan/assets/js/admin.js"></script>
-<script>
-  AdminAPI.renderDonationsTable();
-
-  document.getElementById('donations-filter-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    AdminAPI.renderDonationsTable(data);
-  });
-</script>
 </body>
 </html>

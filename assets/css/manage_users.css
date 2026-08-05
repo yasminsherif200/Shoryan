@@ -1,0 +1,117 @@
+.page-content {
+    margin-left: 240px;
+    padding: 32px;
+    max-width: 1100px;
+}
+
+
+.page-content h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 6px 0;
+}
+
+.page-content > p {
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    margin: 0 0 24px 0;
+}
+
+
+#usersMessage {
+    font-size: 14px;
+}
+
+#usersMessage:empty {
+    display: none;
+}
+
+#usersMessage:not(:empty) {
+    background: var(--surface-variant);
+    color: var(--on-surface-variant);
+    border: 1px solid var(--outline-variant);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+
+#usersTable {
+    background: var(--surface);
+    border: 1px solid var(--outline-variant);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+#usersTable thead th {
+    background: var(--surface-variant);
+}
+
+#usersTableBody tr {
+    transition: background-color 0.15s ease;
+}
+
+#usersTableBody tr:hover {
+    background: var(--surface-variant);
+}
+
+
+#usersTableBody td:nth-child(4) {
+    font-weight: 700;
+}
+
+#usersTableBody td:nth-child(4)::before {
+    content: attr(data-badge);
+}
+
+#usersTableBody td:nth-child(4) {
+    text-align: left;
+}
+
+#usersTableBody td:nth-child(4) span,
+#usersTableBody td:nth-child(4) {
+    white-space: nowrap;
+}
+
+#usersTableBody td:nth-child(6) {
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--on-surface-variant);
+}
+
+
+#usersTableBody td:last-child button {
+    background: none;
+    border: 1px solid var(--error);
+    color: var(--error);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#usersTableBody td:last-child button:hover {
+    background: var(--error);
+    color: #fff;
+}
+
+
+@media (max-width: 900px) {
+    .page-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    #usersTable {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
