@@ -1,48 +1,76 @@
-<?php require_once __DIR__ . '/../../includes/auth_check.php'; require_admin(); ?>
+<?php
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_admin();
+
+$currentPage = 'requests';
+$pageTitle = 'Manage Requests';
+?>
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manage Blood Requests - Admin Portal - Shoryan</title>
-<link rel="stylesheet" href="/assets/css/style.css">
+    <meta charset="UTF-8">
+    <title><?= htmlspecialchars($pageTitle) ?> - Shoryan</title>
+    <link rel="stylesheet" href="/Shoryan/assets/css/navbar.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/footer.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/forms.css">
+    <link rel="stylesheet" href="/Shoryan/assets/css/dashboard.css">
 </head>
 <body>
+
 <?php include __DIR__ . '/../../includes/navbar.php'; ?>
 
-<main class="container">
-  <h1>Manage Blood Requests</h1>
-  <p class="muted">Verify requests with the hospital blood bank, update request status, or delete a request entirely.</p>
+<main class="page-with-sidebar">
 
-  <form id="admin-filter-form" class="filters">
-    <select name="status">
-      <option value="">All statuses</option>
-      <option value="open">Open</option>
-      <option value="fulfilled">Fulfilled</option>
-    </select>
-    <button type="submit">Filter</button>
-  </form>
+    <div class="dashboard-topbar">
+        <div class="topbar-user">
+            <div class="topbar-user-info">
+                <p class="topbar-user-name">Admin Portal</p>
+                <p class="topbar-user-id">Manage Blood Requests</p>
+            </div>
+        </div>
+    </div>
 
-  <table class="admin-table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Patient</th>
-        <th>Blood Type</th>
-        <th>Hospital</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="requests-table-body">
-      <tr><td colspan="6">Loading...</td></tr>
-    </tbody>
-  </table>
+    <div class="activity-card">
+        <div class="activity-card-header">
+            <h2>All Blood Requests</h2>
+            <form id="admin-filter-form" class="filter-bar">
+                <select name="status" class="filter-select">
+                    <option value="">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="fulfilled">Fulfilled</option>
+                </select>
+                <button type="submit" class="btn-new-request">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    Filter
+                </button>
+            </form>
+        </div>
+
+        <div id="requestsMessage" class="form-message"></div>
+
+        <table id="requestsTable" class="data-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Patient</th>
+                    <th>Blood Type</th>
+                    <th>Hospital</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="requests-table-body">
+                <tr><td colspan="6">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
 </main>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
-<script src="/assets/js/requests.js"></script>
-<script src="/assets/js/admin.js"></script>
+
+<script src="/Shoryan/assets/js/requests.js"></script>
+<script src="/Shoryan/assets/js/admin.js"></script>
 <script>
   AdminAPI.renderRequestsTable();
 
