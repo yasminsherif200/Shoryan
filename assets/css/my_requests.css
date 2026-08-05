@@ -1,0 +1,279 @@
+/* ===== Page header (title + Create Request button) ===== */
+.requests-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.requests-topbar h1 {
+    margin: 0 0 6px 0;
+    font-size: 26px;
+}
+
+.requests-subtitle {
+    margin: 0;
+    color: var(--on-surface-variant);
+    font-size: 14px;
+    max-width: 480px;
+}
+
+.btn-create-request {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+/* ===== Summary cards row (Critical Need + Total Requests) ===== */
+.requests-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.critical-need-card {
+    background: var(--surface);
+    border: 1px solid var(--outline-variant);
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.critical-need-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.critical-need-card p {
+    margin: 0 0 14px 0;
+    color: var(--on-surface-variant);
+    font-size: 14px;
+}
+
+.critical-need-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.critical-need-link:hover {
+    text-decoration: underline;
+}
+
+.total-requests-card {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.total-requests-card .stat-label {
+    color: rgba(255,255,255,0.85);
+}
+
+.total-requests-card .stat-icon {
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.total-requests-card .stat-value {
+    color: #fff;
+    margin: 4px 0 14px 0;
+}
+
+.stat-progress-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.25);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.stat-progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 999px;
+    width: 0%;
+}
+
+.total-requests-card .stat-caption {
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+    font-size: 13px;
+}
+
+/* ===== Table cells ===== */
+#requestsTable td, #requestsTable th {
+    vertical-align: middle;
+}
+
+.blood-type-badge {
+    display: inline-block;
+    min-width: 34px;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.hospital-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--on-surface);
+}
+
+.hospital-cell svg {
+    flex-shrink: 0;
+    color: var(--on-surface-variant);
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-open {
+    background: #fff4de;
+    color: #a15c00;
+}
+
+.status-fulfilled {
+    background: #e3f7e9;
+    color: #1e7d3c;
+}
+
+.status-cancelled {
+    background: var(--surface-variant);
+    color: var(--on-surface-variant);
+}
+
+.actions-cell {
+    display: flex;
+    gap: 6px;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--outline-variant);
+    background: var(--surface);
+    color: var(--on-surface-variant);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.action-btn-delete:hover {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+/* ===== Modals (View / Update) ===== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(27,28,28,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+}
+
+.modal-overlay.open {
+    display: flex;
+}
+
+.modal-box {
+    background: var(--surface);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--on-surface-variant);
+}
+
+.modal-body {
+    padding: 22px;
+}
+
+.view-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surface-variant);
+    font-size: 14px;
+}
+
+.view-row:last-child {
+    border-bottom: none;
+}
+
+.view-row-label {
+    color: var(--on-surface-variant);
+}
+
+.view-row-value {
+    font-weight: 600;
+    text-align: right;
+}
+
+@media (max-width: 720px) {
+    .requests-summary-grid {
+        grid-template-columns: 1fr;
+    }
+    .requests-topbar {
+        flex-direction: column;
+    }
+}
