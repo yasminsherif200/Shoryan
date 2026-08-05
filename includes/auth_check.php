@@ -13,8 +13,9 @@ function require_login(){
 
 function require_admin(){
     require_login();
+
     if($_SESSION['role'] !== 'admin'){
         header('Location: /Shoryan/pages/index.php');
+        exit;
     }
-    exit;
 }
