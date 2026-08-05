@@ -78,229 +78,303 @@ function deleteRequest(requestId) {
             alert('Something went wrong. Please try again.');
         });
 }
-/* ============================================================
-   requests.js - Shoryan API Client
-   مسؤول عن جميع استدعاءات الـ Backend (Fetch API)
-   ============================================================ */
 
-// ----------------------------------------------
-// 
-// ----------------------------------------------
-const API_BASE_URL = 'http://127.0.0.1:8000/api'; // لو شغال على بورت تاني غيرها
 
-// ----------------------------------------------
-// 2. معالج الردود العام (معالجة الأخطاء)
-// ----------------------------------------------
-async function handleResponse(response) {
-  if (!response.ok) {
-    // حاول تجيب رسالة الخطأ من الـ Backend
-    let errorMsg = `Request failed with status ${response.status}`;
-    try {
-      const errorData = await response.json();
-      errorMsg = errorData.message || errorMsg;
-    } catch (e) {
-      // لو الرد مش JSON
+// ========================================================
+// request_create.php - handle the create-request form
+// ========================================================
+document.addEventListener('DOMContentLoaded', function () {
+    const requestForm = document.getElementById('requestForm');
+    if (requestForm) {
+        requestForm.addEventListener('submit', handleCreateRequest);
     }
-    throw new Error(errorMsg);
-  }
-  // لو الرد 204 (No Content) أو مفيش محتوى
-  if (response.status === 204) {
-    return {};
-  }
-  return response.json();
+});
+
+function handleCreateRequest(e) {
+    e.preventDefault();
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const msg = document.getElementById('formMessage');
+
+    submitBtn.disabled = true;
+    msg.className = 'form-message';
+    msg.textContent = '';
+
+    const formData = new URLSearchParams(new FormData(e.target));
+
+    fetch('/Shoryan/api/requests/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        credentials: 'include',
+        body: formData
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            msg.textContent = data.message;
+            msg.classList.add(data.success ? 'message-success' : 'message-error');
+
+            if (data.success) {
+                setTimeout(function () {
+                    window.location.href = '/Shoryan/pages/request_details.php?id=' + data.data.request_id;
+                }, 800);
+            } else {
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(function (err) {
+            console.error(err);
+            msg.textContent = 'Something went wrong. Please try again.';
+            msg.classList.add('message-error');
+            submitBtn.disabled = false;
+        });
 }
 
-// ----------------------------------------------
-// 3. دوال المصادقة (Authentication)
-// ----------------------------------------------
-export async function registerUser(userData) {
-  const res = await fetch(`${API_BASE_URL}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
-  });
-  return handleResponse(res);
+
+// ========================================================
+// request_details.php - load and render a single request
+// ========================================================
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('requestDetailContainer');
+    if (container) {
+        loadRequestDetails(container);
+    }
+});
+
+function loadRequestDetails(container) {
+    const requestId = container.dataset.id;
+    const currentUserId = parseInt(container.dataset.currentUserId, 10);
+    const messageBox = document.getElementById('detailMessage');
+    const content = document.getElementById('detailContent');
+
+    if (!requestId || requestId === '0') {
+        messageBox.textContent = 'Invalid request ID.';
+        messageBox.classList.add('message-error');
+        return;
+    }
+
+    fetch('/Shoryan/api/requests/view.php?id=' + requestId, { credentials: 'include' })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (!data.success) {
+                messageBox.textContent = data.message;
+                messageBox.classList.add('message-error');
+                return;
+            }
+
+            renderRequestDetails(data.data, currentUserId, requestId);
+            content.style.display = 'block';
+        })
+        .catch(function (err) {
+            console.error(err);
+            messageBox.textContent = 'Failed to load this request.';
+            messageBox.classList.add('message-error');
+        });
 }
 
-export async function loginUser(credentials) {
-  const res = await fetch(`${API_BASE_URL}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(credentials),
-  });
-  return handleResponse(res);
+function renderRequestDetails(request, currentUserId, requestId) {
+    document.getElementById('detailPatientName').textContent = request.patient_name;
+
+    const urgencyBadge = document.getElementById('detailUrgencyBadge');
+    urgencyBadge.textContent = request.urgency;
+    urgencyBadge.classList.add('urgency-' + request.urgency);
+
+    document.getElementById('detailBloodType').textContent = request.blood_type;
+    document.getElementById('detailUnitsNeeded').textContent = request.units_needed + ' Bag' + (request.units_needed > 1 ? 's' : '');
+
+    const donations = request.donations || [];
+    const completed = donations.filter(function (d) { return d.status === 'completed'; });
+    const percent = Math.min(100, Math.round((completed.length / request.units_needed) * 100));
+    document.getElementById('detailProgressText').textContent = completed.length + ' / ' + request.units_needed + ' Bags (' + percent + '%)';
+    document.getElementById('detailProgressBar').style.width = percent + '%';
+
+    document.getElementById('detailRequesterName').textContent = request.requester_name;
+    document.getElementById('detailRequesterInitials').textContent = getInitialsFromName(request.requester_name);
+    document.getElementById('detailCreatedAt').textContent = formatDetailDate(request.created_at);
+    document.getElementById('detailHospital').textContent = request.hospital_name || '-';
+    document.getElementById('detailPhone').textContent = request.requester_phone;
+
+    if (request.notes) {
+        document.getElementById('detailNotes').textContent = request.notes;
+        document.getElementById('detailNotesBox').style.display = 'block';
+    }
+
+    const isOwner = parseInt(request.requester_id, 10) === currentUserId;
+    const alreadyVolunteered = donations.some(function (d) {
+        return parseInt(d.donor_id, 10) === currentUserId && (d.status === 'pending' || d.status === 'accepted');
+    });
+
+    const volunteerBtn = document.getElementById('volunteerBtn');
+    if (!isOwner && request.status === 'open' && !alreadyVolunteered) {
+        volunteerBtn.style.display = 'flex';
+        volunteerBtn.addEventListener('click', function () {
+            volunteerBtn.disabled = true;
+            volunteerForRequest(requestId, function (result) {
+                if (result.success) {
+                    loadRequestDetails(document.getElementById('requestDetailContainer'));
+                } else {
+                    volunteerBtn.disabled = false;
+                }
+            });
+        });
+    }
+
+    renderDonationOffers(donations, isOwner, requestId);
 }
 
-export async function logoutUser() {
-  const res = await fetch(`${API_BASE_URL}/logout`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
+function renderDonationOffers(donations, isOwner, requestId) {
+    const list = document.getElementById('donationOffersList');
+    document.getElementById('detailOffersCount').textContent = donations.length;
+
+    if (donations.length === 0) {
+        list.innerHTML = '<p class="donor-offer-type">No volunteers yet.</p>';
+        return;
+    }
+
+    list.innerHTML = '';
+    donations.forEach(function (d) {
+        const item = document.createElement('div');
+        item.className = 'donation-offer-item';
+
+        let actionsHtml = '<span class="status-badge status-' + d.status + '">' + d.status + '</span>';
+
+        if (isOwner && d.status === 'pending') {
+            actionsHtml =
+                '<div class="offer-actions">' +
+                    '<button class="btn-accept" data-donation-id="' + d.id + '" data-new-status="accepted">Accept</button>' +
+                    '<button class="btn-reject" data-donation-id="' + d.id + '" data-new-status="rejected">Reject</button>' +
+                '</div>';
+        } else if (isOwner && d.status === 'accepted') {
+            actionsHtml =
+                '<button class="btn-complete" data-donation-id="' + d.id + '" data-new-status="completed">Mark Completed</button>';
+        }
+
+        item.innerHTML =
+            '<div>' +
+                '<p class="donor-offer-name">' + d.donor_name + '</p>' +
+                '<p class="donor-offer-type">' + d.donor_phone + '</p>' +
+            '</div>' +
+            actionsHtml;
+
+        list.appendChild(item);
+    });
+
+    list.querySelectorAll('[data-donation-id]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const donationId = btn.dataset.donationId;
+            const newStatus = btn.dataset.newStatus;
+            btn.disabled = true;
+            updateDonationStatus(donationId, newStatus, function () {
+                loadRequestDetails(document.getElementById('requestDetailContainer'));
+            });
+        });
+    });
 }
 
-// ----------------------------------------------
-// 4. دوال طلبات الدم (Blood Requests CRUD)
-// ----------------------------------------------
-
-// جلب كل الطلبات (مع إمكانية تمرير فلتر مثل ?bloodType=O-&city=Cairo)
-export async function getRequests(filters = {}) {
-  const query = new URLSearchParams(filters).toString();
-  const url = query ? `${API_BASE_URL}/requests?${query}` : `${API_BASE_URL}/requests`;
-  const res = await fetch(url, {
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
+function getInitialsFromName(name) {
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); }).join('');
 }
 
-// جلب طلب واحد بالـ ID
-export async function getRequestById(id) {
-  const res = await fetch(`${API_BASE_URL}/requests/${id}`, {
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
+function formatDetailDate(dateStr) {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
-// إنشاء طلب جديد (نشر استغاثة)
-export async function createRequest(data) {
-  const res = await fetch(`${API_BASE_URL}/requests`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify(data),
-  });
-  return handleResponse(res);
+
+// ========================================================
+// browse_requests.php - list + filter all open requests
+// ========================================================
+let browseFilterTimer = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+    const browseGrid = document.getElementById('browseGrid');
+    if (!browseGrid) return;
+
+    const form = document.getElementById('browseFilterForm');
+    form.addEventListener('input', function () {
+        clearTimeout(browseFilterTimer);
+        browseFilterTimer = setTimeout(function () {
+            loadBrowseRequests(getBrowseFilters(form));
+        }, 400); // debounce so it doesn't fetch on every keystroke
+    });
+    form.addEventListener('change', function () {
+        loadBrowseRequests(getBrowseFilters(form));
+    });
+
+    loadBrowseRequests({});
+});
+
+function getBrowseFilters(form) {
+    return {
+        search: form.search.value.trim(),
+        blood_type: form.blood_type.value,
+        city: form.city.value.trim()
+    };
 }
 
-// تحديث طلب (مثلاً: تغيير عدد الأكياس الموفرة، أو توثيق الحالة)
-export async function updateRequest(id, data) {
-  const res = await fetch(`${API_BASE_URL}/requests/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify(data),
-  });
-  return handleResponse(res);
+function loadBrowseRequests(filters) {
+    const grid = document.getElementById('browseGrid');
+    const messageBox = document.getElementById('browseMessage');
+
+    messageBox.textContent = '';
+    messageBox.className = 'form-message';
+
+    const params = new URLSearchParams({ scope: 'all' });
+    if (filters.search) params.append('search', filters.search);
+    if (filters.blood_type) params.append('blood_type', filters.blood_type);
+    if (filters.city) params.append('city', filters.city);
+
+    grid.innerHTML = '<p class="browse-empty-state">Loading requests...</p>';
+
+    fetch('/Shoryan/api/requests/list.php?' + params.toString(), { credentials: 'include' })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (!data.success) {
+                grid.innerHTML = '';
+                messageBox.textContent = data.message;
+                messageBox.classList.add('message-error');
+                return;
+            }
+
+            renderBrowseCards(data.data);
+        })
+        .catch(function (err) {
+            console.error(err);
+            grid.innerHTML = '';
+            messageBox.textContent = 'Failed to load requests.';
+            messageBox.classList.add('message-error');
+        });
 }
 
-// حذف طلب
-export async function deleteRequest(id) {
-  const res = await fetch(`${API_BASE_URL}/requests/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
+function renderBrowseCards(requests) {
+    const grid = document.getElementById('browseGrid');
+
+    if (requests.length === 0) {
+        grid.innerHTML = '<p class="browse-empty-state">No matching requests found.</p>';
+        return;
+    }
+
+    grid.innerHTML = requests.map(function (r) {
+        return (
+            '<div class="request-card urgency-' + r.urgency + '">' +
+                '<div class="request-card-header">' +
+                    '<h3>' + escapeHtmlBrowse(r.patient_name) + '</h3>' +
+                    '<span class="blood-type-pill">' + escapeHtmlBrowse(r.blood_type) + '</span>' +
+                '</div>' +
+                '<p class="request-card-meta">' + escapeHtmlBrowse(r.hospital_name || 'Hospital not specified') + '</p>' +
+                '<p class="request-card-meta">' + escapeHtmlBrowse(r.city) + '</p>' +
+                '<div class="request-card-footer">' +
+                    '<span class="status-badge status-' + r.urgency + '">' + r.urgency + '</span>' +
+                    '<a class="btn-view-details" href="/Shoryan/pages/request_details.php?id=' + r.id + '">View Details</a>' +
+                '</div>' +
+            '</div>'
+        );
+    }).join('');
 }
 
-// ----------------------------------------------
-// 5. دوال المتبرعين (Donors)
-// ----------------------------------------------
-export async function getDonors(filters = {}) {
-  const query = new URLSearchParams(filters).toString();
-  const url = query ? `${API_BASE_URL}/donors?${query}` : `${API_BASE_URL}/donors`;
-  const res = await fetch(url, {
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
-}
-
-// تحديث حالة المتبرع (متاح / غير متاح)
-export async function updateDonorAvailability(donorId, isAvailable) {
-  const res = await fetch(`${API_BASE_URL}/donors/${donorId}/availability`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify({ is_available: isAvailable }),
-  });
-  return handleResponse(res);
-}
-
-// ----------------------------------------------
-// 6. دوال المطابقة والتعهدات (Matching & Pledges)
-// ----------------------------------------------
-
-// جلب المتبرعين المطابقين لطلب معين (بناءً على الفصيلة والموقع)
-export async function getMatchingDonors(requestId) {
-  const res = await fetch(`${API_BASE_URL}/requests/${requestId}/matches`, {
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
-}
-
-// تسجيل تعهد بالتبرع (Pledge)
-export async function createPledge(requestId, data) {
-  const res = await fetch(`${API_BASE_URL}/pledges`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify({ request_id: requestId, ...data }),
-  });
-  return handleResponse(res);
-}
-
-// تحديث حالة التعهد (مقبول، مكتمل، ملغي)
-export async function updatePledgeStatus(pledgeId, status) {
-  const res = await fetch(`${API_BASE_URL}/pledges/${pledgeId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify({ status }),
-  });
-  return handleResponse(res);
-}
-
-// ----------------------------------------------
-// 7. دوال الإشعارات (Notifications)
-// ----------------------------------------------
-export async function getNotifications() {
-  const res = await fetch(`${API_BASE_URL}/notifications`, {
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
-}
-
-export async function markNotificationAsRead(notificationId) {
-  const res = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
-}
-
-// ----------------------------------------------
-// 8. دوال المشرف (Admin)
-// ----------------------------------------------
-export async function verifyRequestByAdmin(requestId) {
-  const res = await fetch(`${API_BASE_URL}/admin/requests/${requestId}/verify`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-  });
-  return handleResponse(res);
-}
-
-export async function getAdminStats() {
-  const res = await fetch(`${API_BASE_URL}/admin/stats`, {
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res);
-}
-
-// ----------------------------------------------
-// 9. دوال مساعدة (Helper)
-// ----------------------------------------------
-
-// دالة لجلب التوكن من localStorage (لازم تكون موجودة بعد تسجيل الدخول)
-function getAuthHeaders() {
-  const token = localStorage.getItem('shoryan_token');
-  if (token) {
-    return { Authorization: `Bearer ${token}` };
-  }
-  return {};
-}
-
-// رفع ملف (اختياري - لو هتضيف صورة أو تحليل)
-export async function uploadFile(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  const res = await fetch(`${API_BASE_URL}/upload`, {
-    method: 'POST',
-    headers: getAuthHeaders(), // ملحوظة: ما تحطش Content-Type عشان FormData هي اللي تحدد الحدود
-    body: formData,
-  });
-  return handleResponse(res);
+function escapeHtmlBrowse(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
 }

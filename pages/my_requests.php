@@ -17,7 +17,7 @@ $pageTitle = 'My Requests';
 
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<main class="page-content">
+<main class="page-with-sidebar">
     <h1>My Requests</h1>
     <p>Here are all the blood requests you created.</p>
 
