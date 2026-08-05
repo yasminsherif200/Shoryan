@@ -77,3 +77,87 @@ function deleteUser(userId) {
             alert('Something went wrong. Please try again.');
         });
 }
+
+
+// ========================================================
+// ===== Person 5: Admin Dashboard Stats =====
+// Powers pages/admin/dashboard.php from api/admin/stats.php.
+// Runs only on the dashboard page (guarded by #statTotalUsers).
+// ========================================================
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('statTotalUsers')) {
+        loadDashboardStats();
+    }
+});
+
+function loadDashboardStats() {
+    const messageBox = document.getElementById('statsMessage');
+
+    fetch('/Shoryan/api/admin/stats.php')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (!data.success) {
+                if (messageBox) {
+                    messageBox.textContent = data.message;
+                    messageBox.classList.add('message-error');
+                }
+                return;
+            }
+
+            const stats = data.data;
+            const totals = stats.totals || {};
+
+            // Headline stat cards
+            setStatText('statTotalUsers', totals.users);
+            setStatText('statOpenRequests', totals.open_requests);
+            setStatText('statTotalDonations', totals.donations);
+            setStatText('statAvailableDonors', totals.available_donors);
+
+            // Breakdown lists
+            renderBreakdown('requestStatusBreakdown', stats.requests_by_status);
+            renderBreakdown('donationStatusBreakdown', stats.donations_by_status);
+            renderBreakdown('bloodTypeBreakdown', stats.users_by_blood_type);
+        })
+        .catch(function (err) {
+            console.error(err);
+            if (messageBox) {
+                messageBox.textContent = 'Failed to load dashboard stats.';
+                messageBox.classList.add('message-error');
+            }
+        });
+}
+
+function setStatText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = (value === undefined || value === null) ? 0 : value;
+}
+
+// Renders a { key: count } object as rows inside the given container
+function renderBreakdown(containerId, data) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const entries = Object.keys(data || {});
+    if (entries.length === 0) {
+        container.innerHTML = '<p class="breakdown-key">No data yet.</p>';
+        return;
+    }
+
+    container.innerHTML = '';
+    entries.forEach(function (key) {
+        const row = document.createElement('div');
+        row.className = 'breakdown-row';
+
+        const keyEl = document.createElement('span');
+        keyEl.className = 'breakdown-key';
+        keyEl.textContent = key;
+
+        const valEl = document.createElement('span');
+        valEl.className = 'breakdown-val';
+        valEl.textContent = data[key];
+
+        row.appendChild(keyEl);
+        row.appendChild(valEl);
+        container.appendChild(row);
+    });
+}
