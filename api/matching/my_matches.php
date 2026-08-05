@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $donor_id = $_SESSION['user_id'];
 
-// نجيب كل التبرعات اللي أنا (المستخدم الحالي) اتطوعت بيها، مع بيانات الطلب المرتبط
+// كل التبرعات اللي أنا (المستخدم الحالي) اتطوعت بيها، مع بيانات الطلب المرتبط
 $stmt = $dsn->prepare(
     "SELECT
         d.id AS donation_id,
@@ -33,4 +33,12 @@ $stmt = $dsn->prepare(
 $stmt->execute(['donor_id' => $donor_id]);
 $matches = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-jsonResponse(true, $matches, "Matches fetched successfully");
+// بيانات إضافية عن المتبرع نفسه، محتاجينها لحساب "Next Eligible" في الواجهة
+$donorStmt = $dsn->prepare("SELECT last_donation_date, city FROM users WHERE id = :id");
+$donorStmt->execute(['id' => $donor_id]);
+$donor = $donorStmt->fetch(PDO::FETCH_ASSOC);
+
+jsonResponse(true, [
+    'donations' => $matches,
+    'donor' => $donor,
+], "Matches fetched successfully");

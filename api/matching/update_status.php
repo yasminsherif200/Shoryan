@@ -56,6 +56,13 @@ if ($new_status === 'completed') {
 }
 $update->execute(['status' => $new_status, 'id' => $donation_id]);
 
+// لو التبرع اكتمل فعلاً، حدّث last_donation_date بتاع المتبرع
+// (ده اللي my_donations.php بيستخدمه عشان يحسب "Next Eligible")
+if ($new_status === 'completed') {
+    $updateDonor = $dsn->prepare("UPDATE users SET last_donation_date = CURDATE() WHERE id = :donor_id");
+    $updateDonor->execute(['donor_id' => $donation['donor_id']]);
+}
+
 // لو التبرع اكتمل، نشوف هل الطلب وصل لعدد الوحدات المطلوبة عشان نقفله تلقائيًا
 if ($new_status === 'completed') {
     $countStmt = $dsn->prepare(
