@@ -28,10 +28,6 @@ $pageTitle = 'Dashboard';
         real supply-vs-demand modeling), so it's left out rather than hardcoded.
     -->
     <div class="dashboard-topbar">
-        <button type="button" class="notif-bell" id="notifBell" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-            <span id="notifBadge" class="notif-badge" style="display:none;"></span>
-        </button>
  
         <div class="topbar-user">
             <div class="topbar-user-info">

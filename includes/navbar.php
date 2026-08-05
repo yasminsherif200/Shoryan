@@ -46,6 +46,7 @@ if (!isset($currentPage)) {
             <a class="sidebar-link <?= $currentPage === 'dashboard' ? 'active' : '' ?>" href="/Shoryan/pages/dashboard.php">Dashboard</a>
             <a class="sidebar-link <?= $currentPage === 'profile' ? 'active' : '' ?>" href="/Shoryan/pages/profile.php">My Profile</a>
             <a class="sidebar-link <?= $currentPage === 'my-requests' ? 'active' : '' ?>" href="/Shoryan/pages/my_requests.php">My Requests</a>
+            <a class="sidebar-link <?= $currentPage === 'browse-requests' ? 'active' : '' ?>" href="/Shoryan/pages/browse_requests.php">Browse Requests</a>
             <a class="sidebar-link <?= $currentPage === 'find-donors' ? 'active' : '' ?>" href="/Shoryan/pages/search_donors.php">Find Donors</a>
             <a class="sidebar-link <?= $currentPage === 'my-donations' ? 'active' : '' ?>" href="/Shoryan/pages/my_donations.php">My Donations</a>
         </nav>
