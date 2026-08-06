@@ -288,9 +288,9 @@ async function loadMyRequests() {
 
     // Prefer RequestsAPI if requests.js defines it; otherwise fall back to a direct fetch.
     if (typeof RequestsAPI !== 'undefined' && typeof RequestsAPI.list === 'function') {
-      result = await RequestsAPI.list({ mine: 1 });
+      result = await RequestsAPI.list({ scope: 'mine' });
     } else {
-      const res = await fetch('/Shoryan/api/requests/list.php?mine=1', {
+      const res = await fetch('/Shoryan/api/requests/list.php?scope=mine', {
         credentials: 'same-origin'
       });
       const text = await res.text();
@@ -303,7 +303,19 @@ async function loadMyRequests() {
       }
     }
 
-    if (!result || !result.success || !Array.isArray(result.data) || !result.data.length) {
+    if (!result || typeof result.success === 'undefined') {
+      console.error('Unexpected response shape:', result);
+      list.innerHTML = '<div class="empty-state">You haven\u2019t created any blood requests yet.</div>';
+      return;
+    }
+
+    if (!result.success) {
+      msg.textContent = result.message || 'Failed to load your requests.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    if (!Array.isArray(result.data) || !result.data.length) {
       list.innerHTML = '<div class="empty-state">You haven\u2019t created any blood requests yet.</div>';
       return;
     }
