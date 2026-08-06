@@ -296,7 +296,8 @@ async function loadMyRequests() {
     }
     list.innerHTML = result.data.map(renderRequestCard).join('');
   } catch (err) {
-    msg.textContent = 'Failed to load your requests. Please try again.';
+    console.error('loadMyRequests error:', err);
+    msg.textContent = 'Failed to load your requests: ' + err.message;
   }
 }
 
