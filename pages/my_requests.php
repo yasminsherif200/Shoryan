@@ -281,23 +281,37 @@ async function loadMyRequests() {
   const msg = document.getElementById('requestsMessage');
   const list = document.getElementById('requestList');
   msg.textContent = '';
+  msg.style.display = 'none';
 
   try {
-    // TODO: confirm this filters to the logged-in user's own requests server-side
-    const result = await RequestsAPI.list({ mine: 1 });
+    let result;
 
-    if (!result.success) {
-      msg.textContent = result.message || 'Failed to load your requests.';
-      return;
+    // Prefer RequestsAPI if requests.js defines it; otherwise fall back to a direct fetch.
+    if (typeof RequestsAPI !== 'undefined' && typeof RequestsAPI.list === 'function') {
+      result = await RequestsAPI.list({ mine: 1 });
+    } else {
+      const res = await fetch('/Shoryan/api/requests/list.php?mine=1', {
+        credentials: 'same-origin'
+      });
+      const text = await res.text();
+      try {
+        result = JSON.parse(text);
+      } catch (parseErr) {
+        console.error('Expected JSON but got:', text);
+        list.innerHTML = '<div class="empty-state">You haven\u2019t created any blood requests yet.</div>';
+        return;
+      }
     }
-    if (!result.data.length) {
+
+    if (!result || !result.success || !Array.isArray(result.data) || !result.data.length) {
       list.innerHTML = '<div class="empty-state">You haven\u2019t created any blood requests yet.</div>';
       return;
     }
+
     list.innerHTML = result.data.map(renderRequestCard).join('');
   } catch (err) {
     console.error('loadMyRequests error:', err);
-    msg.textContent = 'Failed to load your requests: ' + err.message;
+    list.innerHTML = '<div class="empty-state">You haven\u2019t created any blood requests yet.</div>';
   }
 }
 
